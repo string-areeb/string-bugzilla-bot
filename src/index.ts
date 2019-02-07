@@ -2,14 +2,9 @@ import { Application, Context } from 'probot' // eslint-disable-line no-unused-v
 import links from './links'
 
 export = (app: Application) => {
-  app.on('issues.opened', async (context: Context) => {
-    const issueComment = context.issue({ body: 'Thanks for opening this issue!' })
-    await context.github.issues.createComment(issueComment)
-  })
-
   // Unfurl Bugzilla Links
 
-  app.on('issue_comment.created', async (context: Context) => {
+  app.on(['issue_comment.created', 'issue_comment.edited'], async (context: Context) => {
     const body = links.replaceLinks(context.payload.comment.body)
 
     await context.github.issues.updateComment(context.repo({
@@ -18,7 +13,19 @@ export = (app: Application) => {
     }))
   })
 
-  app.on(['issues.opened', 'pull_request.opened'], async (context: Context) => {
+  app.on(['issues.opened', 'issues.edited'], async (context: Context) => {
+    const body = links.replaceLinks(context.payload.issue.body)
 
+    await context.github.issues.update(context.issue({
+      body
+    }))
+  })
+
+  app.on(['pull_request.opened', 'pull_request.edited'], async (context: Context) => {
+    const body = links.replaceLinks(context.payload.pull_request.body)
+
+    await context.github.pullRequests.update(context.issue({
+      body
+    }))
   })
 }
