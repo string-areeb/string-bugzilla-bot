@@ -1,4 +1,4 @@
-const prefixes = ['bz-', 'bug ', 'issue ']
+const prefixes = ['bz-', 'bug ', 'issue ', '!']
 
 function createRegex(): RegExp {
     const suffix = '(\\d+)'

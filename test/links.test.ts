@@ -42,3 +42,9 @@ test('Replaces issue prefix comment', async (done) => {
   done(expect(links.replaceLinks(comment))
     .toBe('.[Issue 2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345)'))
 })
+
+test('Replaces ! prefix comment', async (done) => {
+  const comment = 'Closes !2345'
+  done(expect(links.replaceLinks(comment))
+    .toBe('Closes [!2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345)'))
+})
