@@ -107,7 +107,7 @@ describe('BugZilla comments tests', () => {
             tags: ['peru', 'jamaica']
         }]
 
-        done(expect(bugzilla.hasTagComment(comments)).toBe(false))
+        done(expect(bugzilla.hasTagComment(comments, 'gh-pr')).toBe(false))
     })
 
     test('Returns true if comments have a PR comment', async (done) => {
@@ -119,7 +119,7 @@ describe('BugZilla comments tests', () => {
             tags: ['gh', 'gh-pr']
         }]
 
-        done(expect(bugzilla.hasTagComment(comments)).toBe(true))
+        done(expect(bugzilla.hasTagComment(comments, 'gh-pr')).toBe(true))
     })
 
 })
