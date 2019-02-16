@@ -1,18 +1,31 @@
 const prefixes = ['bz-', 'bug ', 'issue ', '!']
+const fixVerbs = ['Fixes', 'Closes', 'Resolves']
 
-function createRegex(): RegExp {
+function createBugRegex(): String {
     const suffix = '(\\d+)'
-    const bugRegex = prefixes
+    return prefixes
         .map(prefix => `(?:${prefix}${suffix})`)
         .join('|')
+}
+
+const bugRegex = createBugRegex()
+
+function createIssueRegex(): RegExp {
     return new RegExp(`(?:^|[\\s.,;()?!])(${bugRegex})`, 'ig')
 }
 
-const regex = createRegex()
+function createFixesIssueRegex(): RegExp {
+    const fixRegex = fixVerbs.map(verb => `(?:${verb})`)
+        .join('|')
+    return new RegExp(`(?:^|[\\s.,;()?!])(?:(?:(${fixRegex})) )(${bugRegex})`, 'ig')
+}
+
+const issueRegex = createIssueRegex()
+const fixesIssueRegex = createFixesIssueRegex()
 
 export = {
     replaceLinks(body: string) {
-        return body.replace(regex, function(match, reference) {
+        return body.replace(issueRegex, function(match, reference) {
             const possibleCaptures = Array.from(arguments).slice(2, arguments.length - 2)
 
             let capture = null
@@ -25,5 +38,20 @@ export = {
 
             return match.replace(reference, `[${reference}](https://bugzilla.string.org.in/show_bug.cgi?id=${capture})`)
         })
+    },
+
+    getFixedIssueNumbers(body: string) {
+        const matched = body.match(fixesIssueRegex)
+        if (matched != null) {
+            return matched.map(match => {
+                const issue = match.match('\\d+')
+                if (issue != null) {
+                    return parseInt(issue[0])
+                } else {
+                    return null
+                }
+            }).filter(item => item != null)
+        }
+        return []
     }
 }
