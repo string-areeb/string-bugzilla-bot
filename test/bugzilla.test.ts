@@ -4,6 +4,19 @@ import bugzilla from '../src/bugzilla'
 
 nock.disableNetConnect()
 
+function getRequest(username = 'test', password = 'tester') {
+    bugzilla.setCredentials(username, password)
+
+    return nock('https://bugzilla.string.org.in')
+        .get('/rest.cgi/login')
+        .query({login: username, password: password})
+}
+
+function setToken(username = 'test', password = 'tester', token = 'bugzilla-token') {
+    getRequest(username, password)
+        .reply(200, { token: token })
+}
+
 describe('BugZilla Auth Tests', () => {
 
     beforeEach(() => {
@@ -12,23 +25,14 @@ describe('BugZilla Auth Tests', () => {
     })
 
     test('Gets token and authenticates with bugzilla', async (done) => {
-        nock('https://bugzilla.string.org.in')
-            .get('/rest.cgi/login')
-            .query({login: 'test', password: 'tester'})
-            .reply(200, { token:"bugzilla-token" })
-
-        bugzilla.setCredentials('test', 'tester')
+        setToken()
 
         done(expect(await bugzilla.getToken()).toBe('bugzilla-token'))
     })
 
     test('Returns null token if error', async (done) => {
-        nock('https://bugzilla.string.org.in')
-            .get('/rest.cgi/login')
-            .query({login: 'test', password: 'tester'})
+        getRequest()
             .replyWithError('')
-        
-        bugzilla.setCredentials('test', 'tester')
 
         done(expect(await bugzilla.getToken()).toBe(null))
     })
@@ -38,13 +42,7 @@ describe('BugZilla Auth Tests', () => {
     })
 
     test('Caches token from bugzilla', async (done) => {
-        nock('https://bugzilla.string.org.in')
-            .get('/rest.cgi/login')
-            .query({login: 'test', password: 'tester'})
-            .once()
-            .reply(200, { token:"bugzilla-token" })
-
-        bugzilla.setCredentials('test', 'tester')
+        setToken()
 
         await bugzilla.getToken()
         done(expect(await bugzilla.getToken()).toBe('bugzilla-token'))
@@ -52,9 +50,7 @@ describe('BugZilla Auth Tests', () => {
 
     test('Refreshes token from bugzilla', async (done) => {
         let first = true
-        nock('https://bugzilla.string.org.in')
-            .get('/rest.cgi/login')
-            .query({login: 'test', password: 'tester'})
+        getRequest()
             .twice()
             .reply(200, () => {
                 if (first) {
@@ -65,11 +61,41 @@ describe('BugZilla Auth Tests', () => {
                 }
             })
 
-        bugzilla.setCredentials('test', 'tester')
-
         await bugzilla.getToken() // cache the first token
         await bugzilla.getToken(true) // refresh the token
         done(expect(await bugzilla.getToken()).toBe('bugzilla-refreshed-token')) // check if new token is cached
+    })
+
+})
+
+describe('BugZilla comments tests', () => {
+
+    function setComments(bug: number, comments: any[]) {
+        nock('https://bugzilla.string.org.in')
+            .get(uri => uri.includes(`/rest.cgi/bug/${bug}/comment`))
+            .reply(200, {bugs:{'2335':{comments}}})
+    }
+
+    test('Fetches comments from BugZilla', async (done) => {
+        setToken()
+
+        const comments = ['test', 'rest']
+        setComments(2335, comments)
+
+        done(expect(await bugzilla.getComments(2335)).toEqual(comments))
+    })
+
+    test('Refetches token on 400', async (done) => {
+        setToken()
+
+        nock('https://bugzilla.string.org.in')
+            .get(uri => uri.includes('/rest.cgi/bug/2335/comment'))
+            .reply(400, {code: 32000})
+        
+        const comments = ['test', 'rest']
+        setComments(2335, comments)
+
+        done(expect(await bugzilla.getComments(2335)).toEqual(comments))
     })
 
 })
