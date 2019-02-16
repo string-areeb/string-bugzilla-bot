@@ -40,7 +40,7 @@ export = {
         })
     },
 
-    getFixedIssueNumbers(body: string) {
+    getFixedIssueNumbers(body: string): number[] {
         const matched = body.match(fixesIssueRegex)
         if (matched != null) {
             return matched.map(match => {
@@ -50,7 +50,7 @@ export = {
                 } else {
                     return null
                 }
-            }).filter(item => item != null)
+            }).filter(item => item != null) as number[]
         }
         return []
     }

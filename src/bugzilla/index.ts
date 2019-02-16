@@ -1,5 +1,6 @@
 require('dotenv').config()
 import request from 'request-promise';
+import links from '../links';
 
 let username: string|undefined = process.env.BUGZILLA_USERNAME;
 let password: string|undefined = process.env.BUGZILLA_PASSWORD;
@@ -135,5 +136,29 @@ export = {
 
             throw error;
         }
+    },
+
+    getPullRequestFixingMessage(pullRequest: any): string {
+        return `Merging of Pull Request ${pullRequest.html_url} will resolve this bug.\nAuthor: ${pullRequest.user.login}`
+    },
+
+    async addFixComment(bug: number, pullRequest: any): Promise<any> {
+        const tag = `gh-pr-${pullRequest.number}`
+
+        if (!await this.isBugAlreadyCommentedOn(bug, tag)) {
+            return this.comment(bug, tag, this.getPullRequestFixingMessage(pullRequest))
+        }
+    },
+
+    async addFixCommentForPr(pullRequest: any): Promise<any> {
+        const fixedIssues = links.getFixedIssueNumbers(pullRequest.body)
+
+        const promises: any[] = []
+        for (let issue of fixedIssues) {
+            promises.push(this.addFixComment(issue, pullRequest)
+                .catch(console.error))
+        }
+
+        return Promise.all(promises)
     }
 }

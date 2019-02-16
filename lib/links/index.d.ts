@@ -1,5 +1,5 @@
 declare const _default: {
     replaceLinks(body: string): string;
-    getFixedIssueNumbers(body: string): (number | null)[];
+    getFixedIssueNumbers(body: string): number[];
 };
 export = _default;
