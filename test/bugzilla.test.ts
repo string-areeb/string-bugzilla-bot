@@ -98,4 +98,28 @@ describe('BugZilla comments tests', () => {
         done(expect(await bugzilla.getComments(2335)).toEqual(comments))
     })
 
+    test('Returns false if comments have no PR comment', async (done) => {
+        const comments = [{
+            tags: ['noat']
+        }, {
+            tags: []
+        }, {
+            tags: ['peru', 'jamaica']
+        }]
+
+        done(expect(bugzilla.hasTagComment(comments)).toBe(false))
+    })
+
+    test('Returns true if comments have a PR comment', async (done) => {
+        const comments = [{
+            tags: []
+        }, {
+            tags: ['absolving']
+        }, {
+            tags: ['gh', 'gh-pr']
+        }]
+
+        done(expect(bugzilla.hasTagComment(comments)).toBe(true))
+    })
+
 })

@@ -72,5 +72,15 @@ export = {
 
             throw error;
         }
+    },
+
+    hasTagComment(comments: any[]): boolean {
+        return !!comments.find(comment => comment.tags.includes('gh-pr'))
+    },
+
+    async isBugAlreadyCommentedOn(bug: number): Promise<Boolean> {
+        const comments = await this.getComments(bug)
+
+        return this.hasTagComment(comments)
     }
 }
