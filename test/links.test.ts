@@ -90,3 +90,28 @@ describe('Fix extraction tests', () => {
   })
 
 })
+
+describe('Fix rendered extraction tests', () => {
+
+  test('Extracts rendered issues', async (done) => {
+    const body = 'Fixes [!55555](https://bugzilla.string.org.in/show_bug.cgi?id=55555)\n Resolves [Bug 6789](https://bugzilla.string.org.in/show_bug.cgi?id=6789)'
+
+    done(expect(links.getFixedRenderedIssueNumbers(body))
+      .toEqual([55555, 6789]))
+  })
+
+  test('Extracts non-rendered issues', async (done) => {
+    const body = 'Fixes !3456. Closes bz-2345'
+
+    done(expect(links.getFixedRenderedIssueNumbers(body))
+      .toEqual([3456, 2345]))
+  })
+
+  test('Extracts non-rendered and rendered issues', async (done) => {
+    const body = 'Fixes !3456. Closes [bz-2345]()\nResolves Bug 3451. Fixes [Issue 2334]()'
+
+    done(expect(links.getFixedRenderedIssueNumbers(body))
+      .toEqual([3456, 2345, 3451, 2334]))
+  })
+
+})
