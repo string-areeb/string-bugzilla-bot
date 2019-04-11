@@ -1,8 +1,7 @@
 import { Application, Context } from 'probot' // eslint-disable-line no-unused-vars
 import links from './links'
 import bugzilla from './bugzilla'
-import { link } from 'fs';
-import { handlePullRequestChange } from './checks';
+import { handlePullRequestChange } from './checks'
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links

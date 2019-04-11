@@ -1,11 +1,12 @@
 import nock from 'nock'
 
 import bugzilla from '../src/bugzilla'
+import { testController, getToken } from '../src/bugzilla/auth'
 
 nock.disableNetConnect()
 
 function getRequest(username = 'test', password = 'tester') {
-    bugzilla.setCredentials(username, password)
+    testController.setCredentials(username, password)
 
     return nock('https://bugzilla.string.org.in')
         .get('/rest.cgi/login')
@@ -20,32 +21,32 @@ function setToken(username = 'test', password = 'tester', token = 'bugzilla-toke
 describe('BugZilla Auth Tests', () => {
 
     beforeEach(() => {
-        bugzilla.setCredentials(undefined, undefined)
-        bugzilla.releaseToken()
+        testController.setCredentials(undefined, undefined)
+        testController.releaseToken()
     })
 
     test('Gets token and authenticates with bugzilla', async (done) => {
         setToken()
 
-        done(expect(await bugzilla.getToken()).toBe('bugzilla-token'))
+        done(expect(await getToken()).toBe('bugzilla-token'))
     })
 
     test('Returns null token if error', async (done) => {
         getRequest()
             .replyWithError('')
 
-        done(expect(await bugzilla.getToken()).toBe(null))
+        done(expect(await getToken()).toBe(null))
     })
 
     test('Returns null token if no credentials', async (done) => {
-        done(expect(await bugzilla.getToken()).toBe(null))
+        done(expect(await getToken()).toBe(null))
     })
 
     test('Caches token from bugzilla', async (done) => {
         setToken()
 
-        await bugzilla.getToken()
-        done(expect(await bugzilla.getToken()).toBe('bugzilla-token'))
+        await getToken()
+        done(expect(await getToken()).toBe('bugzilla-token'))
     })
 
     test('Refreshes token from bugzilla', async (done) => {
@@ -61,9 +62,9 @@ describe('BugZilla Auth Tests', () => {
                 }
             })
 
-        await bugzilla.getToken() // cache the first token
-        await bugzilla.getToken(true) // refresh the token
-        done(expect(await bugzilla.getToken()).toBe('bugzilla-refreshed-token')) // check if new token is cached
+        await getToken() // cache the first token
+        await getToken(true) // refresh the token
+        done(expect(await getToken()).toBe('bugzilla-refreshed-token')) // check if new token is cached
     })
 
 })

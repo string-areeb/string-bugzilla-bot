@@ -1,65 +1,12 @@
 require('dotenv').config()
 import request from 'request-promise';
 import links from '../links';
-
-let username: string|undefined = process.env.BUGZILLA_USERNAME;
-let password: string|undefined = process.env.BUGZILLA_PASSWORD;
-
-let token: string|null = null;
-
-function assertTokenNotNull(token: string|null, message: string) {
-    if (token == null) {
-        throw new Error(message)
-    }
-}
-
-function shouldRefresh(error: any, refresh: boolean): boolean {
-    if (refresh) // If already refreshed, there is nothing we can do
-        return false;
-
-    if (error.statusCode === 400) {
-        const errorJSON = error.response.body
-        const errorResponse = JSON.parse(errorJSON)
-
-        return errorResponse.code === 32000; // Token has expired
-    }
-
-    return false;
-}
+import { getToken, assertTokenNotNull, shouldRefresh } from './auth';
 
 export = {
-    async getToken(refresh: boolean = false): Promise<string|null> {
-        if (token !== null && !refresh) {
-            return token
-        }
-
-        if (username === undefined || password == undefined) {
-            console.error('No username or password found')
-            return null
-        }
-
-        try {
-            const tokenResponse = await request(`https://bugzilla.string.org.in/rest.cgi/login?login=${username}&password=${password}`)
-            token = JSON.parse(tokenResponse).token
-
-            return token
-        } catch (e) {
-            console.error('Error while getting token', e)
-            return null
-        }
-    },
-
-    releaseToken() {
-        token = null
-    },
-
-    setCredentials(login: string|undefined, pass: string|undefined) {
-        username = login
-        password = pass
-    },
-
+    
     async getComments(bug: number, refresh = false): Promise<any[]> {
-        const token = await this.getToken(refresh)
+        const token = await getToken(refresh)
 
         assertTokenNotNull(token, 'Cannot get comments. Token is null')
 
@@ -86,7 +33,7 @@ export = {
     },
 
     async addCommentTag(id: number, tag: string, refresh = false): Promise<any> {
-        const token = await this.getToken(refresh)
+        const token = await getToken(refresh)
 
         assertTokenNotNull(token, 'Cannot add tag. Token is null')
 
@@ -110,7 +57,7 @@ export = {
 
     // Low level function. All logic to whether comment or not must be handled by caller
     async comment(bug: number, tag: string, comment: string, refresh = false): Promise<any> {
-        const token = await this.getToken(refresh)
+        const token = await getToken(refresh)
 
         assertTokenNotNull(token, 'Cannot post comments. Token is null')
 
