@@ -1,5 +1,5 @@
 require('dotenv').config()
-import { getToken, assertTokenNotNull, shouldRefresh, safeRun } from "./auth";
+import { safeRun } from "./auth";
 import request from 'request-promise';
 import { getFixedIssueNumbers } from "../links";
 

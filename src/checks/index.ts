@@ -1,4 +1,4 @@
-import { WebhookPayloadPullRequest, WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
+import {  WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
 import links = require("../links");
 import { Context } from "probot";
 import { ChecksCreateParamsOutput } from "@octokit/rest";
