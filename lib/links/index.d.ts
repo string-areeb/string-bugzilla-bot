@@ -1,8 +1,4 @@
-declare function getBugzillaLink(bug: string | number, reference?: string | number): string;
-declare const _default: {
-    replaceLinks(body: string): string;
-    getBugzillaLink: typeof getBugzillaLink;
-    getFixedIssueNumbers(body: string): number[];
-    getFixedRenderedIssueNumbers(body: string): number[];
-};
-export = _default;
+export declare function getBugzillaLink(bug: string | number, reference?: string | number): string;
+export declare function replaceLinks(body: string): string;
+export declare function getFixedIssueNumbers(body: string): number[];
+export declare function getFixedRenderedIssueNumbers(body: string): number[];

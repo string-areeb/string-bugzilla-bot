@@ -1,13 +1,13 @@
 import { Application, Context } from 'probot' // eslint-disable-line no-unused-vars
-import links from './links'
 import { handlePullRequestChange } from './checks'
 import { addFixCommentForPr } from './bugzilla/comment'
+import { replaceLinks } from './links';
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links
 
   app.on(['issue_comment.created', 'issue_comment.edited'], async (context: Context) => {
-    const body = links.replaceLinks(context.payload.comment.body)
+    const body = replaceLinks(context.payload.comment.body)
 
     await context.github.issues.updateComment(context.repo({
       comment_id: context.payload.comment.id,
@@ -16,7 +16,7 @@ export = (app: Application) => {
   })
 
   app.on(['issues.opened', 'issues.edited'], async (context: Context) => {
-    const body = links.replaceLinks(context.payload.issue.body)
+    const body = replaceLinks(context.payload.issue.body)
 
     await context.github.issues.update(context.issue({
       body
@@ -24,7 +24,7 @@ export = (app: Application) => {
   })
 
   app.on(['pull_request.opened', 'pull_request.edited'], async (context: Context) => {
-    const body = links.replaceLinks(context.payload.pull_request.body)
+    const body = replaceLinks(context.payload.pull_request.body)
 
     await context.github.pullRequests.update(context.issue({
       body

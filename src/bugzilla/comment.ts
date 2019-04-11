@@ -1,7 +1,7 @@
 require('dotenv').config()
 import { getToken, assertTokenNotNull, shouldRefresh } from "./auth";
 import request from 'request-promise';
-import links = require("../links");
+import { getFixedIssueNumbers } from "../links";
 
 export async function getComments(bug: number, refresh = false): Promise<any[]> {
     const token = await getToken(refresh)
@@ -96,7 +96,7 @@ async function addFixComment(bug: number, pullRequest: any): Promise<any> {
 }
 
 export async function addFixCommentForPr(pullRequest: any): Promise<any> {
-    const fixedIssues = links.getFixedIssueNumbers(pullRequest.body)
+    const fixedIssues = getFixedIssueNumbers(pullRequest.body)
 
     const promises: any[] = []
     for (let issue of fixedIssues) {

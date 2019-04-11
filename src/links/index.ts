@@ -43,34 +43,30 @@ function extractIssues(regex: RegExp, body: string): number[] {
     return []
 }
 
-function getBugzillaLink(bug: string | number, reference: string | number = bug) {
+export function getBugzillaLink(bug: string | number, reference: string | number = bug) {
     return `[${reference}](https://bugzilla.string.org.in/show_bug.cgi?id=${bug})`
 }
 
-export = {
-    replaceLinks(body: string) {
-        return body.replace(issueRegex, function(match, reference) {
-            const possibleCaptures = Array.from(arguments).slice(2, arguments.length - 2)
+export function replaceLinks(body: string) {
+    return body.replace(issueRegex, function(match, reference) {
+        const possibleCaptures = Array.from(arguments).slice(2, arguments.length - 2)
 
-            let capture = null
-            for (let possibleCapture of possibleCaptures) {
-                if (possibleCapture !== undefined) {
-                    capture = possibleCapture
-                    break
-                }
+        let capture = null
+        for (let possibleCapture of possibleCaptures) {
+            if (possibleCapture !== undefined) {
+                capture = possibleCapture
+                break
             }
+        }
 
-            return match.replace(reference, getBugzillaLink(capture, reference))
-        })
-    },
+        return match.replace(reference, getBugzillaLink(capture, reference))
+    })
+}
 
-    getBugzillaLink,
+export function getFixedIssueNumbers(body: string): number[] {
+    return extractIssues(fixesIssueRegex, body)
+}
 
-    getFixedIssueNumbers(body: string): number[] {
-        return extractIssues(fixesIssueRegex, body)
-    },
-
-    getFixedRenderedIssueNumbers(body: string): number[] {
-        return extractIssues(fixesRenderedIssueRegex, body)
-    }
+export function getFixedRenderedIssueNumbers(body: string): number[] {
+    return extractIssues(fixesRenderedIssueRegex, body)
 }
