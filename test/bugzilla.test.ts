@@ -1,7 +1,7 @@
 import nock from 'nock'
 
-import bugzilla from '../src/bugzilla'
 import { testController, getToken } from '../src/bugzilla/auth'
+import { getComments, hasTagComment } from '../src/bugzilla/comment'
 
 nock.disableNetConnect()
 
@@ -83,7 +83,7 @@ describe('BugZilla comments tests', () => {
         const comments = ['test', 'rest']
         setComments(2335, comments)
 
-        done(expect(await bugzilla.getComments(2335)).toEqual(comments))
+        done(expect(await getComments(2335)).toEqual(comments))
     })
 
     test('Refetches token on 400', async (done) => {
@@ -96,7 +96,7 @@ describe('BugZilla comments tests', () => {
         const comments = ['test', 'rest']
         setComments(2335, comments)
 
-        done(expect(await bugzilla.getComments(2335)).toEqual(comments))
+        done(expect(await getComments(2335)).toEqual(comments))
     })
 
     test('Returns false if comments have no PR comment', async (done) => {
@@ -108,7 +108,7 @@ describe('BugZilla comments tests', () => {
             tags: ['peru', 'jamaica']
         }]
 
-        done(expect(bugzilla.hasTagComment(comments, 'gh-pr')).toBe(false))
+        done(expect(hasTagComment(comments, 'gh-pr')).toBe(false))
     })
 
     test('Returns true if comments have a PR comment', async (done) => {
@@ -120,7 +120,7 @@ describe('BugZilla comments tests', () => {
             tags: ['gh', 'gh-pr']
         }]
 
-        done(expect(bugzilla.hasTagComment(comments, 'gh-pr')).toBe(true))
+        done(expect(hasTagComment(comments, 'gh-pr')).toBe(true))
     })
 
 })

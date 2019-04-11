@@ -1,7 +1,7 @@
 import { Application, Context } from 'probot' // eslint-disable-line no-unused-vars
 import links from './links'
-import bugzilla from './bugzilla'
 import { handlePullRequestChange } from './checks'
+import { addFixCommentForPr } from './bugzilla/comment'
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links
@@ -32,7 +32,7 @@ export = (app: Application) => {
   })
 
   app.on(['pull_request.opened', 'pull_request.edited'], async (context: Context) => {
-    await bugzilla.addFixCommentForPr(context.payload.pull_request)
+    await addFixCommentForPr(context.payload.pull_request)
   })
 
   app.on([
