@@ -47,6 +47,22 @@ export async function getToken(refresh: boolean = false): Promise<string|null> {
     }
 }
 
+export async function safeRun(fun: (token: string) => any, errorMessage: string | undefined = undefined, refresh: boolean = false): Promise<any> {
+    const token = await getToken(refresh)
+
+    assertTokenNotNull(token, `${ errorMessage || 'Cannot run function' }. Token is null`)
+
+    try {
+        return await fun(token as string)
+    } catch (error) {
+        if (shouldRefresh(error, refresh)) {
+            return safeRun(fun, errorMessage, true)
+        }
+
+        throw error;
+    }
+}
+
 export const testController = {
     releaseToken: async function() {
         token = null

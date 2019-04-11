@@ -1,23 +1,13 @@
 require('dotenv').config()
-import { getToken, assertTokenNotNull, shouldRefresh } from "./auth";
+import { getToken, assertTokenNotNull, shouldRefresh, safeRun } from "./auth";
 import request from 'request-promise';
 import { getFixedIssueNumbers } from "../links";
 
-export async function getComments(bug: number, refresh = false): Promise<any[]> {
-    const token = await getToken(refresh)
-
-    assertTokenNotNull(token, 'Cannot get comments. Token is null')
-
-    try {
+export async function getComments(bug: number): Promise<any[]> {
+    return safeRun(async (token: string) => {
         const commentsResponse = await request(`https://bugzilla.string.org.in/rest.cgi/bug/${bug}/comment?token=${token}`)
         return JSON.parse(commentsResponse).bugs[bug.toString()].comments
-    } catch (error) {
-        if (shouldRefresh(error, refresh)) {
-            return getComments(bug, true)
-        }
-
-        throw error;
-    }
+    }, 'Cannot get comments')
 }
 
 export function hasTagComment(comments: any[], tag: string): boolean {
@@ -31,11 +21,7 @@ async function isBugAlreadyCommentedOn(bug: number, tag: string): Promise<Boolea
 }
 
 async function addCommentTag(id: number, tag: string, refresh = false): Promise<any> {
-    const token = await getToken(refresh)
-
-    assertTokenNotNull(token, 'Cannot add tag. Token is null')
-
-    try {
+    return safeRun(async (token: string) => {
         const tagResponse = await request.put(`https://bugzilla.string.org.in/rest.cgi/bug/comment/${id}/tags?token=${token}`, {
             json: {
                 add: [tag]
@@ -44,23 +30,13 @@ async function addCommentTag(id: number, tag: string, refresh = false): Promise<
 
         console.log(`Tag Added on comment ${id} `, tagResponse)
         return tagResponse
-    } catch(error) {
-        if (shouldRefresh(error, refresh)) {
-            return addCommentTag(id, tag, true)
-        }
-
-        throw error;
-    }
+    }, 'Cannot add tag')
 }
 
 // Low level function. All logic to whether comment or not must be handled by caller
 async function postComment(bug: number, tag: string, comment: string, refresh = false): Promise<any> {
-    const token = await getToken(refresh)
-
-    assertTokenNotNull(token, 'Cannot post comments. Token is null')
-
-    const commentUrl = `https://bugzilla.string.org.in/rest.cgi/bug/${bug}/comment`
-    try {
+    return safeRun(async (token: string) => {
+        const commentUrl = `https://bugzilla.string.org.in/rest.cgi/bug/${bug}/comment`
         const response = await request.post(`${commentUrl}?token=${token}`, {
             json: {
                 comment: comment,
@@ -74,13 +50,7 @@ async function postComment(bug: number, tag: string, comment: string, refresh = 
         console.log(`Commented on bug ${bug} `, response)
 
         return addCommentTag(response.id, tag)
-    } catch(error) {
-        if (shouldRefresh(error, refresh)) {
-            return postComment(bug, tag, comment, true)
-        }
-
-        throw error;
-    }
+    }, 'Cannot post comments')
 }
 
 function getPullRequestFixingMessage(pullRequest: any): string {

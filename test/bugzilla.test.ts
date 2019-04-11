@@ -1,7 +1,7 @@
 import nock from 'nock'
 
 import { testController, getToken } from '../src/bugzilla/auth'
-import { getComments, hasTagComment } from '../src/bugzilla/comment'
+import { getComments, hasTagComment, getCommentsNew } from '../src/bugzilla/comment'
 
 nock.disableNetConnect()
 
