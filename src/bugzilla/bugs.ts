@@ -118,11 +118,22 @@ export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPu
         return
     }
 
-    const bugsUpdate = {
-        ids: fixedBugs,
-        status: 'RESOLVED',
-        resolution: 'FIXED'
+    const fixedIssues = await getBugs(fixedBugs)
+    const openIssues = fixedIssues.filter(issue => issue.is_open).map(issue => issue.id)
+
+    if (openIssues.length <= 0) {
+        console.log(`No open issues left amoung fixes issues: ${fixedIssues.map(issue => { id: issue.id })}`)
+        return
     }
 
-    return await updateBugs(bugsUpdate)
+    const bugsUpdate = {
+        ids: openIssues,
+        status: 'RESOLVED',
+        resolution: 'FIXED',
+        comment: {
+            body: 'PR Ready'
+        }
+    }
+
+    return updateBugs(bugsUpdate)
 }
