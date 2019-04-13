@@ -56,5 +56,5 @@ export interface BugUpdateParams {
 }
 export declare function getBugs(bugs: number[]): Promise<Bug[]>;
 export declare function updateBugs(params: BugUpdateParams): Promise<any>;
-export declare function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPullRequest, bugs?: number[]): Promise<any>;
+export declare function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPullRequest, tryCount?: number, bugs?: number[]): Promise<any>;
 export {};

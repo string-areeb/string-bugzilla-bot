@@ -99,7 +99,7 @@ export async function addFixCommentForPr(pullRequest: WebhookPayloadPullRequestP
             .catch(console.error))
     }
 
-    promises.push(changeBugsToFixed(pullRequest, fixedIssues))
+    promises.push(changeBugsToFixed(pullRequest))
 
     return Promise.all(promises)
 }

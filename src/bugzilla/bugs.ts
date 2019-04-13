@@ -79,7 +79,7 @@ export async function updateBugs(params: BugUpdateParams): Promise<any> {
             json: params
         })
 
-        console.log(`Bug Updated ${params}: ${updateResponse}`)
+        console.log(`Bug Updated ${JSON.stringify(params)}: ${JSON.stringify(updateResponse)}`)
 
         return updateResponse
     }, 'Cannot get bug')
@@ -104,7 +104,44 @@ function isPullRequestWorkInProgress(pullRequest: PullRequest): boolean {
     return wipInTitle || wipInLabel
 }
 
-export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPullRequest, bugs?: number[]): Promise<any> {
+interface PendingRequest {
+    pullRequest: WebhookPayloadPullRequestPullRequest,
+    id: number,
+    try: number
+}
+
+let pendingBugs: PendingRequest[] = []
+
+async function executePendingBugs(): Promise<any> {
+    const bugIds = pendingBugs.map(bug => bug.id)
+    const countMap: { [key: string]: PendingRequest[] } = {
+        1: [],
+        2: [],
+        3: [],
+        4: []
+    }
+    for (let bug of pendingBugs) {
+        countMap[bug.try] = [bug, ...countMap[bug.try]]
+    }
+
+    // Remove bugs from pending
+    pendingBugs = pendingBugs.filter(bug => bugIds.indexOf(bug.id) !== -1)
+
+    const promises = []
+    for (let id of Object.keys(countMap)) {
+        const pendingRequests = countMap[id]
+        if (pendingRequests.length <= 0)
+            return
+        promises.push(changeBugsToFixed(pendingRequests[0].pullRequest, parseInt(id), pendingRequests.map(bug => bug.id)))
+    }
+}
+
+export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPullRequest, tryCount: number = 0, bugs?: number[]): Promise<any> {
+    if (tryCount > 3) {
+        console.log(`Try count exceeds limit. Dropping ${bugs}`)
+        return
+    }
+    console.log('Updating')
     if (isPullRequestWorkInProgress(pullRequest)) {
         console.warn(`The pull request '${pullRequest.number}: ${pullRequest.title}' with labels ${pullRequest.labels} is Work in Progress, 
         so not changing Bug Status`)
@@ -118,11 +155,51 @@ export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPu
         return
     }
 
-    const bugsUpdate = {
-        ids: fixedBugs,
-        status: 'RESOLVED',
-        resolution: 'FIXED'
+    const fixedIssues = await getBugs(fixedBugs)
+    const openIssues = fixedIssues.filter(issue => issue.is_open).map(issue => issue.id)
+
+    if (openIssues.length <= 0) {
+        console.log(`No open issues left amoung fixes issues: ${fixedIssues.map(issue => { id: issue.id })}`)
+        return
     }
 
-    return await updateBugs(bugsUpdate)
+    const pendingIssues = pendingBugs.map(bug => bug.id)
+    const nonPendingIssues = openIssues.filter(id => pendingIssues.indexOf(id) === -1)
+
+    if (nonPendingIssues.length <= 0) {
+        console.log(`No non-pending issue left. Waiting for current issues to get finished`)
+        return
+    }
+
+    for (let bugId of nonPendingIssues) {
+        pendingBugs.push({
+            pullRequest,
+            id: bugId,
+            try: tryCount
+        })
+    }
+
+    const bugsUpdate = {
+        ids: nonPendingIssues,
+        status: 'RESOLVED',
+        resolution: 'FIXED',
+        comment: {
+            body: 'PR Ready'
+        }
+    }
+
+    try {
+        const response = await updateBugs(bugsUpdate)
+        for (let bugId of nonPendingIssues) {
+            const index = pendingBugs.map(bug => bug.id).indexOf(bugId)
+
+            if (index !== -1)
+                nonPendingIssues.splice(index, 1)
+        }
+        return response
+    } catch(e) {
+        throw e
+    } finally {
+        executePendingBugs().then(() => console.log('Execuyed pending bugs successfully'))
+    }
 }
