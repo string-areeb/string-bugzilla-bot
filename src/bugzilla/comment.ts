@@ -3,14 +3,37 @@ import { safeRun } from "./auth";
 import request from 'request-promise';
 import { getFixedIssueNumbers } from "../links";
 
-export async function getComments(bug: number): Promise<any[]> {
+interface TagContainer {
+    tags: string[]
+}
+
+interface Comment extends TagContainer {
+    id: number,
+    bug_id: number,
+    text: string
+    count: number,
+    creator: string,
+    attachment_id: string,
+    creation_time: string,
+    is_private: boolean
+}
+
+interface CommentResponse {
+    bugs: { 
+        [key: string]: {
+            comments: Comment[]
+        }
+    } 
+}
+
+export async function getComments(bug: number): Promise<Comment[]> {
     return safeRun(async (token: string) => {
         const commentsResponse = await request(`https://bugzilla.string.org.in/rest.cgi/bug/${bug}/comment?token=${token}`)
-        return JSON.parse(commentsResponse).bugs[bug.toString()].comments
+        return (JSON.parse(commentsResponse) as CommentResponse).bugs[bug.toString()].comments
     }, 'Cannot get comments')
 }
 
-export function hasTagComment(comments: any[], tag: string): boolean {
+export function hasTagComment(comments: TagContainer[], tag: string): boolean {
     return !!comments.find(comment => comment.tags.includes(tag))
 }
 
