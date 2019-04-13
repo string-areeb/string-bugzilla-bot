@@ -1,3 +1,4 @@
+import { WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
 interface AccountDetail {
     id: number;
     email: string;
@@ -45,8 +46,15 @@ export interface Bug {
     alias: any[];
     groups: any[];
 }
-export interface BugzillaResponse<T> {
-    [key: string]: T;
+export interface BugsResponse {
+    bugs: Bug[];
 }
-export declare function getBug(bug: number): Promise<Bug>;
+export interface BugUpdateParams {
+    ids?: number[];
+    status?: string;
+    resolution?: string;
+}
+export declare function getBugs(bugs: number[]): Promise<Bug[]>;
+export declare function updateBugs(params: BugUpdateParams): Promise<any>;
+export declare function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPullRequest, bugs?: number[]): Promise<any>;
 export {};

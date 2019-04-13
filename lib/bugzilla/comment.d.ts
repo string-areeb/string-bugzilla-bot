@@ -1,3 +1,4 @@
+import { WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
 interface TagContainer {
     tags: string[];
 }
@@ -13,5 +14,5 @@ interface Comment extends TagContainer {
 }
 export declare function getComments(bug: number): Promise<Comment[]>;
 export declare function hasTagComment(comments: TagContainer[], tag: string): boolean;
-export declare function addFixCommentForPr(pullRequest: any): Promise<any>;
+export declare function addFixCommentForPr(pullRequest: WebhookPayloadPullRequestPullRequest): Promise<any>;
 export {};

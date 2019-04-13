@@ -2,6 +2,7 @@ import { Application, Context } from 'probot' // eslint-disable-line no-unused-v
 import { handlePullRequestChange } from './checks'
 import { addFixCommentForPr } from './bugzilla/comment'
 import { replaceLinks } from './links';
+import { changeBugsToFixed } from './bugzilla/bugs';
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links
@@ -41,5 +42,9 @@ export = (app: Application) => {
     'pull_request.labeled',
     'pull_request.unlabeled'], async (context: Context) => {
     await handlePullRequestChange(context)
+  })
+
+  app.on(['pull_request.unlabeled'], async (context: Context) => {
+    await changeBugsToFixed(context.payload.pull_request)
   })
 }

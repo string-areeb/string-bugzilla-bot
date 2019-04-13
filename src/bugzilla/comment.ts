@@ -2,6 +2,8 @@ require('dotenv').config()
 import { safeRun } from "./auth";
 import request from 'request-promise';
 import { getFixedIssueNumbers } from "../links";
+import { WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
+import { changeBugsToFixed } from "./bugs";
 
 interface TagContainer {
     tags: string[]
@@ -43,7 +45,7 @@ async function isBugAlreadyCommentedOn(bug: number, tag: string): Promise<Boolea
     return hasTagComment(comments, tag)
 }
 
-async function addCommentTag(id: number, tag: string, refresh = false): Promise<any> {
+async function addCommentTag(id: number, tag: string): Promise<any> {
     return safeRun(async (token: string) => {
         const tagResponse = await request.put(`https://bugzilla.string.org.in/rest.cgi/bug/comment/${id}/tags?token=${token}`, {
             json: {
@@ -57,7 +59,7 @@ async function addCommentTag(id: number, tag: string, refresh = false): Promise<
 }
 
 // Low level function. All logic to whether comment or not must be handled by caller
-async function postComment(bug: number, tag: string, comment: string, refresh = false): Promise<any> {
+async function postComment(bug: number, tag: string, comment: string): Promise<any> {
     return safeRun(async (token: string) => {
         const commentUrl = `https://bugzilla.string.org.in/rest.cgi/bug/${bug}/comment`
         const response = await request.post(`${commentUrl}?token=${token}`, {
@@ -76,11 +78,11 @@ async function postComment(bug: number, tag: string, comment: string, refresh = 
     }, 'Cannot post comments')
 }
 
-function getPullRequestFixingMessage(pullRequest: any): string {
+function getPullRequestFixingMessage(pullRequest: WebhookPayloadPullRequestPullRequest): string {
     return `Merging of Pull Request ${pullRequest.html_url} will resolve this bug.\nAuthor: ${pullRequest.user.login}`
 }
 
-async function addFixComment(bug: number, pullRequest: any): Promise<any> {
+async function addFixComment(bug: number, pullRequest: WebhookPayloadPullRequestPullRequest): Promise<any> {
     const tag = `gh-pr-${pullRequest.number}`
 
     if (!await isBugAlreadyCommentedOn(bug, tag)) {
@@ -88,7 +90,7 @@ async function addFixComment(bug: number, pullRequest: any): Promise<any> {
     }
 }
 
-export async function addFixCommentForPr(pullRequest: any): Promise<any> {
+export async function addFixCommentForPr(pullRequest: WebhookPayloadPullRequestPullRequest): Promise<any> {
     const fixedIssues = getFixedIssueNumbers(pullRequest.body)
 
     const promises: any[] = []
@@ -96,6 +98,8 @@ export async function addFixCommentForPr(pullRequest: any): Promise<any> {
         promises.push(addFixComment(issue, pullRequest)
             .catch(console.error))
     }
+
+    promises.push(changeBugsToFixed(pullRequest, fixedIssues))
 
     return Promise.all(promises)
 }

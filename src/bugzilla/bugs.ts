@@ -1,6 +1,8 @@
 require('dotenv').config()
 import { safeRun } from "./auth";
 import request from 'request-promise';
+import { WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
+import { getFixedRenderedIssueNumbers } from "../links";
 
 interface AccountDetail {
     id: number,
@@ -51,13 +53,76 @@ export interface Bug {
     groups: any[]
 }
 
-export interface BugzillaResponse<T> {
-    [key: string ]: T
+export interface BugsResponse {
+    bugs: Bug[]
 }
 
-export async function getBug(bug: number): Promise<Bug> {
+export interface BugUpdateParams {
+    ids?: number[],
+    status?: string,
+    resolution?: string
+}
+
+export async function getBugs(bugs: number[]): Promise<Bug[]> {
     return safeRun(async (token: string) => {
-        const bugResponse = await request(`https://bugzilla.string.org.in/rest.cgi/bug/${bug}?token=${token}`)
-        return (JSON.parse(bugResponse) as BugzillaResponse<Bug>).bugs
+        const bugResponse = await request(`https://bugzilla.string.org.in/rest.cgi/bug?id=${bugs.join(',')}&token=${token}`)
+        return (JSON.parse(bugResponse) as BugsResponse).bugs
     }, 'Cannot get bug')
+}
+
+export async function updateBugs(params: BugUpdateParams): Promise<any> {
+    if (!params.ids || params.ids.length <= 0)
+        throw Error("IDs must be supplied")
+
+    return safeRun(async (token: string) => {
+        const updateResponse = await request.put(`https://bugzilla.string.org.in/rest.cgi/bug/${params.ids![0]}?token=${token}`, {
+            json: params
+        })
+
+        console.log(`Bug Updated ${params}: ${updateResponse}`)
+
+        return updateResponse
+    }, 'Cannot get bug')
+}
+
+interface PullRequest {
+    title: string,
+    labels: {
+        name: string
+    }[]
+}
+
+const wipRegex = /^((wip:)|(\[wip\]))/ig
+
+function isPullRequestWorkInProgress(pullRequest: PullRequest): boolean {
+    const matches = pullRequest.title.match(wipRegex)
+    const wipInTitle = matches && matches.length > 0
+
+    const wipInLabel = pullRequest.labels.some(label => label.name.toLowerCase() === 'wip' || 
+        label.name.toLowerCase() == 'work in progress')
+
+    return wipInTitle || wipInLabel
+}
+
+export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPullRequest, bugs?: number[]): Promise<any> {
+    if (isPullRequestWorkInProgress(pullRequest)) {
+        console.warn(`The pull request '${pullRequest.number}: ${pullRequest.title}' with labels ${pullRequest.labels} is Work in Progress, 
+        so not changing Bug Status`)
+        return
+    }
+
+    const fixedBugs = bugs || getFixedRenderedIssueNumbers(pullRequest.body)
+
+    if (fixedBugs.length <= 0) {
+        console.log(`No resolved bug for PR ${pullRequest.number}: ${pullRequest.title} with body ${pullRequest.body}`)
+        return
+    }
+
+    const bugsUpdate = {
+        ids: fixedBugs,
+        status: 'RESOLVED',
+        resolution: 'FIXED'
+    }
+
+    return await updateBugs(bugsUpdate)
 }
