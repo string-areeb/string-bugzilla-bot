@@ -2,7 +2,8 @@ import { Application, Context } from 'probot' // eslint-disable-line no-unused-v
 import { handlePullRequestChange } from './checks'
 import { addFixCommentForPr } from './bugzilla/comment'
 import { replaceLinks } from './links';
-import { changeBugsToFixed } from './bugzilla/bugs';
+import { changeBugsToFixed, getMilestoneForPr, addMilestoneToIssue } from './bugzilla/bugs';
+import { IssuesCreateMilestoneResponse, IssuesListMilestonesForRepoResponse } from '@octokit/rest';
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links
@@ -34,6 +35,10 @@ export = (app: Application) => {
 
   app.on(['pull_request.opened', 'pull_request.edited'], async (context: Context) => {
     await addFixCommentForPr(context.payload.pull_request)
+  })
+
+  app.on(['pull_request.opened', 'pull_request.edited'], async (context: Context) => {
+    await addMilestoneToIssue(context)
   })
 
   app.on([

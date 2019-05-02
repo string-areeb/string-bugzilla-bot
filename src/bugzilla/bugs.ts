@@ -3,6 +3,8 @@ import { safeRun } from "./auth";
 import request from 'request-promise';
 import { WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
 import { getFixedRenderedIssueNumbers } from "../links";
+import { Context } from "probot";
+import { IssuesCreateMilestoneResponse } from "@octokit/rest";
 
 interface AccountDetail {
     id: number,
@@ -136,4 +138,52 @@ export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPu
     }
 
     return updateBugs(bugsUpdate)
+}
+
+export async function getMilestoneForPr(pullRequest: WebhookPayloadPullRequestPullRequest): Promise<any> {
+    if (pullRequest.milestone) {
+        console.log(`Milestone is already set for PR ${pullRequest.number} - ${pullRequest.title}, no need to fetch`)
+        return
+    }
+
+    const fixedIssues = getFixedRenderedIssueNumbers(pullRequest.body)
+
+    const bugs = await getBugs(fixedIssues)
+    const nonEmptyMilestones = bugs.map(bug => bug.target_milestone).filter(milestone => milestone !== '---')
+
+    if (nonEmptyMilestones.length > 0) {
+        if (nonEmptyMilestones.length > 1)
+            console.log(`Multiple Milestones ${nonEmptyMilestones} for bugs ${fixedIssues} of PR ${pullRequest.number} - ${pullRequest.title}. Picking first`)
+
+        return nonEmptyMilestones[0]
+    } else {
+        return null
+    }
+}
+
+async function getOrCreateMilestone(context: Context, milestone: string): Promise<IssuesCreateMilestoneResponse> {
+    const milestones = await context.github.issues.listMilestonesForRepo(context.repo())
+    const filteredMilestones = milestones.data.filter(ms => ms.title == milestone)
+
+    if (filteredMilestones.length == 0) {
+        const newMilestone = await context.github.issues.createMilestone(context.repo({
+            title: milestone
+        }))
+
+        return newMilestone.data
+    }
+
+    return filteredMilestones[0]
+}
+
+export async function addMilestoneToIssue(context: Context): Promise<any> {
+    const milestone = await getMilestoneForPr(context.payload.pull_request)
+
+    if (milestone) {
+        const milestoneInRepo = await getOrCreateMilestone(context, milestone)
+
+        await context.github.issues.update(context.issue({
+            milestone: milestoneInRepo.number
+        }))
+    }
 }

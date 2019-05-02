@@ -1,4 +1,5 @@
 import { WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
+import { Context } from "probot";
 interface AccountDetail {
     id: number;
     email: string;
@@ -57,4 +58,6 @@ export interface BugUpdateParams {
 export declare function getBugs(bugs: number[]): Promise<Bug[]>;
 export declare function updateBugs(params: BugUpdateParams): Promise<any>;
 export declare function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPullRequest, bugs?: number[]): Promise<any>;
+export declare function getMilestoneForPr(pullRequest: WebhookPayloadPullRequestPullRequest): Promise<any>;
+export declare function addMilestoneToIssue(context: Context): Promise<any>;
 export {};
