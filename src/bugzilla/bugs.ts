@@ -66,7 +66,10 @@ export interface BugUpdateParams {
 }
 
 export async function getBugs(bugs: number[]): Promise<Bug[]> {
+    if (bugs.length == 0)
+        return []
     return safeRun(async (token: string) => {
+        console.log(token)
         const bugResponse = await request(`https://bugzilla.string.org.in/rest.cgi/bug?id=${bugs.join(',')}&token=${token}`)
         return (JSON.parse(bugResponse) as BugsResponse).bugs
     }, 'Cannot get bug')
@@ -116,7 +119,7 @@ export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPu
     const fixedBugs = bugs || getFixedRenderedIssueNumbers(pullRequest.body)
 
     if (fixedBugs.length <= 0) {
-        console.log(`No resolved bug for PR ${pullRequest.number}: ${pullRequest.title} with body ${pullRequest.body}`)
+        console.log(`Bug Fix: No resolved bug for PR ${pullRequest.number}: ${pullRequest.title} with body ${pullRequest.body}`)
         return
     }
 
@@ -124,7 +127,7 @@ export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPu
     const openIssues = fixedIssues.filter(issue => issue.is_open).map(issue => issue.id)
 
     if (openIssues.length <= 0) {
-        console.log(`No open issues left amoung fixes issues: ${fixedIssues.map(issue => { id: issue.id })}`)
+        console.log(`Bug Fix: No open issues left amoung fixes issues: ${fixedIssues.map(issue => { id: issue.id })}`)
         return
     }
 
@@ -142,11 +145,16 @@ export async function changeBugsToFixed(pullRequest: WebhookPayloadPullRequestPu
 
 export async function getMilestoneForPr(pullRequest: WebhookPayloadPullRequestPullRequest): Promise<any> {
     if (pullRequest.milestone) {
-        console.log(`Milestone is already set for PR ${pullRequest.number} - ${pullRequest.title}, no need to fetch`)
+        console.log(`Milestone: Milestone is already set for PR ${pullRequest.number} - ${pullRequest.title}, no need to fetch`)
         return
     }
 
     const fixedIssues = getFixedRenderedIssueNumbers(pullRequest.body)
+
+    if (fixedIssues.length <= 0) {
+        console.log(`Milestone: No resolved bug for PR ${pullRequest.number}: ${pullRequest.title} with body ${pullRequest.body}`)
+        return null
+    }
 
     const bugs = await getBugs(fixedIssues)
     const nonEmptyMilestones = bugs.map(bug => bug.target_milestone).filter(milestone => milestone !== '---')
