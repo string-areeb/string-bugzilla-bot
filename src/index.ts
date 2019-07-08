@@ -1,9 +1,8 @@
 import { Application, Context } from 'probot' // eslint-disable-line no-unused-vars
-import { handlePullRequestChange } from './checks'
+import { handlePullRequestChange, handleCheckRun, handleCheckSuite } from './checks'
 import { addFixCommentForPr } from './bugzilla/comment'
 import { replaceLinks } from './links';
-import { changeBugsToFixed, getMilestoneForPr, addMilestoneToIssue } from './bugzilla/bugs';
-import { IssuesCreateMilestoneResponse, IssuesListMilestonesForRepoResponse } from '@octokit/rest';
+import { changeBugsToFixed, addMilestoneToIssue } from './bugzilla/bugs';
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links
@@ -28,7 +27,7 @@ export = (app: Application) => {
   app.on(['pull_request.opened', 'pull_request.edited'], async (context: Context) => {
     const body = replaceLinks(context.payload.pull_request.body)
 
-    await context.github.pullRequests.update(context.issue({
+    await context.github.pulls.update(context.issue({
       body
     }))
   })
@@ -47,6 +46,14 @@ export = (app: Application) => {
     'pull_request.labeled',
     'pull_request.unlabeled'], async (context: Context) => {
     await handlePullRequestChange(context)
+  })
+
+  app.on(['check_run.rerequested'], async (context: Context) => {
+    await handleCheckRun(context)
+  })
+
+  app.on(['check_suite.requested', 'check_suite.rerequested'], async (context: Context) => {
+    await handleCheckSuite(context)
   })
 
   app.on(['pull_request.unlabeled'], async (context: Context) => {

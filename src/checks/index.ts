@@ -1,7 +1,7 @@
 import {  WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
 import links = require("../links");
 import { Context } from "probot";
-import { ChecksCreateParamsOutput } from "@octokit/rest";
+import { ChecksCreateParamsOutput, PullRequestsGetResponse } from "@octokit/rest";
 
 type conclusion = "success"
 | "failure"
@@ -10,8 +10,8 @@ type conclusion = "success"
 | "timed_out"
 | "action_required"
 
-export async function handlePullRequestChange(context: Context) {
-    const pull: WebhookPayloadPullRequestPullRequest = context.payload.pull_request
+export async function handlePullRequestChange(context: Context, pullRequest: PullRequestsGetResponse | null = null) {
+    const pull: WebhookPayloadPullRequestPullRequest = pullRequest || context.payload.pull_request
     const head = pull.head
     const fixedIssues = links.getFixedRenderedIssueNumbers(pull.body)
 
@@ -49,4 +49,24 @@ export async function handlePullRequestChange(context: Context) {
     }
 
     await context.github.checks.create(context.repo(status))
+}
+
+async function handleCheckRunOrSuite(context: Context, target: { pull_requests: { number: number }[] }) {
+    if (target.pull_requests.length < 1) {
+        return
+    }
+
+    return await Promise.all(target.pull_requests.map(async (pullRequest) => {
+        handlePullRequestChange(context, (await context.github.pulls.get(context.issue({
+            number: pullRequest.number
+        }))).data)
+    }))
+}
+
+export async function handleCheckRun(context: Context) {
+    await handleCheckRunOrSuite(context, context.payload.check_run)
+}
+
+export async function handleCheckSuite(context: Context) {
+    await handleCheckRunOrSuite(context, context.payload.check_suite)
 }
