@@ -28,8 +28,8 @@ const issueRegex = createIssueRegex()
 const fixesIssueRegex = createFixesIssueRegex()
 const fixesRenderedIssueRegex = createFixesIssueRegex('\\[?', '\\]?')
 
-function extractIssues(regex: RegExp, body: string): number[] {
-    const matched = body.match(regex)
+function extractIssues(regex: RegExp, body: string | null): number[] {
+    const matched = (body || '').match(regex)
     if (matched != null) {
         return matched.map(match => {
             const issue = match.match('\\d+')
@@ -47,8 +47,8 @@ export function getBugzillaLink(bug: string | number, reference: string | number
     return `[${reference}](https://bugzilla.string.org.in/show_bug.cgi?id=${bug})`
 }
 
-export function replaceLinks(body: string) {
-    return body.replace(issueRegex, function(match, reference) {
+export function replaceLinks(body: string | null) {
+    return (body || '').replace(issueRegex, function(match, reference) {
         const possibleCaptures = Array.from(arguments).slice(2, arguments.length - 2)
 
         let capture = null
