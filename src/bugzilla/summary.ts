@@ -20,7 +20,7 @@ function getStub(): Summary {
 
 export async function getSummary(product: string, targetMilestone: string): Promise<Summary> {
     return safeRun(async (token) => {
-        const bugs = await (await fetch(`https://bugzilla.string.org.in/rest.cgi/bug?peoduct=${ product }&target_milestone=${ targetMilestone }&token=${ token }`)).json() as BugsResponse
+        const bugs = await (await fetch(`https://bugzilla.string.org.in/rest.cgi/bug?product=${ product }&target_milestone=${ targetMilestone }&include_fields=id,status,resolution&token=${ token }`)).json() as BugsResponse
 
         const response = {
             ...getStub()
