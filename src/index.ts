@@ -3,9 +3,17 @@ import { handlePullRequestChange, handleCheckRun, handleCheckSuite } from './che
 import { addFixCommentForPr } from './bugzilla/comment'
 import { replaceLinks } from './links';
 import { changeBugsToFixed, addMilestoneToIssue } from './bugzilla/bugs';
+import { Request, Response } from 'express';
+import { getSummary } from './bugzilla/summary';
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links
+
+  const router = app.route('/bugzilla')
+
+  router.get('/summary/:product/:target_milestone', async (req: Request, res: Response) => {
+    res.send(JSON.stringify(await getSummary(req.params.product, req.params.target_milestone), null, 2))
+  })
 
   app.on(['issue_comment.created', 'issue_comment.edited'], async (context: Context) => {
     const body = replaceLinks(context.payload.comment.body)

@@ -69,7 +69,6 @@ export async function getBugs(bugs: number[]): Promise<Bug[]> {
     if (bugs.length == 0)
         return []
     return safeRun(async (token: string) => {
-        console.log(token)
         const bugResponse = await request(`https://bugzilla.string.org.in/rest.cgi/bug?id=${bugs.join(',')}&token=${token}`)
         return (JSON.parse(bugResponse) as BugsResponse).bugs
     }, 'Cannot get bug')
