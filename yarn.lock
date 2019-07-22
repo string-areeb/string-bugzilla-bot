@@ -903,8 +903,9 @@ atob@^2.1.1:
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
 "auto-label@github:iamareebjamal/auto-label":
-  version "1.0.0"
-  resolved "https://codeload.github.com/iamareebjamal/auto-label/tar.gz/86a73fb87689e588e44c04aabf5f5ec4c1280935"
+  version "1.0.1"
+  uid "36985169d0f088a415b0bd44275869a0a3ca1206"
+  resolved "https://codeload.github.com/iamareebjamal/auto-label/tar.gz/36985169d0f088a415b0bd44275869a0a3ca1206"
   dependencies:
     "@types/nock" "^9.3.0"
     nock "^10.0.0"
