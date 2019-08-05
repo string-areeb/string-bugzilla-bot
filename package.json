@@ -27,7 +27,7 @@
     "auto-label": "github:iamareebjamal/auto-label",
     "nock": "^10.0.0",
     "node-fetch": "^2.6.0",
-    "probot": "^9.2.19",
+    "probot": "^9.3.0",
     "probot-reminders": "probot/reminders",
     "probot-unfurl": "github:probot/unfurl",
     "request": "^2.88.0",
