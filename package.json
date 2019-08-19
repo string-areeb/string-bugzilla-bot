@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.0",
-    "@types/jest": "^24.0.15",
+    "@types/jest": "^24.0.18",
     "@types/node": "^12.6.2",
     "@types/node-fetch": "^2.3.7",
     "eslint-plugin-typescript": "^0.14.0",
