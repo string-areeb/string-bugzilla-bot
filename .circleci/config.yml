@@ -30,3 +30,6 @@ jobs:
           command: yarn test --ci --runInBand
           environment:
               JEST_JUNIT_OUTPUT: "junit.xml"
+      
+      - store_test_results:
+          path: test-results

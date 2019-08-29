@@ -61,3 +61,5 @@ typings/
 .next
 
 junit.xml
+
+test-results
