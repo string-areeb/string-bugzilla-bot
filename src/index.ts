@@ -1,10 +1,10 @@
 import { Application, Context } from 'probot' // eslint-disable-line no-unused-vars
 import { handlePullRequestChange, handleCheckRun, handleCheckSuite } from './checks'
 import { addFixCommentForPr } from './bugzilla/comment'
-import { replaceLinks } from './links';
-import { changeBugsToFixed, addMilestoneToIssue } from './bugzilla/bugs';
-import { Request, Response } from 'express';
-import { getSummary } from './bugzilla/summary';
+import { replaceLinks } from './links'
+import { changeBugsToFixed, addMilestoneToIssue } from './bugzilla/bugs'
+import { Request, Response } from 'express'
+import { getSummary } from './bugzilla/summary'
 
 export = (app: Application) => {
   // Unfurl Bugzilla Links

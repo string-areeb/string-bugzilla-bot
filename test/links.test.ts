@@ -1,4 +1,4 @@
-import { replaceLinks, getFixedIssueNumbers, getFixedRenderedIssueNumbers } from "../src/links";
+import { replaceLinks, getFixedIssueNumbers, getFixedRenderedIssueNumbers } from '../src/links'
 
 describe('Link replacement tests', () => {
   test('Replaces bz prefix comment', async (done) => {
@@ -6,43 +6,43 @@ describe('Link replacement tests', () => {
     done(expect(replaceLinks(comment))
       .toBe('Closes [bz-2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345)'))
   })
-  
+
   test('Ignores already unfurled comment', async (done) => {
     const comment = 'Closes [bz-2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345)'
     done(expect(replaceLinks(comment))
       .toBe(comment))
   })
-  
+
   test('Ignores reference in between sentence', async (done) => {
     const comment = 'Closesbz-2345'
     done(expect(replaceLinks(comment))
       .toBe(comment))
   })
-  
+
   test('Unfurls reference at the start of sentence', async (done) => {
     const comment = 'bz-2345'
     done(expect(replaceLinks(comment))
       .toBe('[bz-2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345)'))
   })
-  
+
   test('Unfurls reference with punctuation in front', async (done) => {
     const comment = 'This is good.bz-2345 is resolved'
     done(expect(replaceLinks(comment))
       .toBe('This is good.[bz-2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345) is resolved'))
   })
-  
+
   test('Replaces bug prefix comment', async (done) => {
     const comment = '.bug 2345'
     done(expect(replaceLinks(comment))
       .toBe('.[bug 2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345)'))
   })
-  
+
   test('Replaces issue prefix comment', async (done) => {
     const comment = '.Issue 2345'
     done(expect(replaceLinks(comment))
       .toBe('.[Issue 2345](https://bugzilla.string.org.in/show_bug.cgi?id=2345)'))
   })
-  
+
   test('Replaces ! prefix comment', async (done) => {
     const comment = 'Closes !2345'
     done(expect(replaceLinks(comment))
@@ -51,7 +51,6 @@ describe('Link replacement tests', () => {
 })
 
 describe('Fix extraction tests', () => {
-
   test('Extracts fixes bz issues', async (done) => {
     const comment = 'Fixes bz-2345'
     done(expect(getFixedIssueNumbers(comment))
@@ -87,11 +86,9 @@ describe('Fix extraction tests', () => {
     done(expect(getFixedIssueNumbers(comment))
       .toEqual([123, 234, 7890, 908]))
   })
-
 })
 
 describe('Fix rendered extraction tests', () => {
-
   test('Extracts rendered issues', async (done) => {
     const body = 'Fixes [!55555](https://bugzilla.string.org.in/show_bug.cgi?id=55555)\n Resolves [Bug 6789](https://bugzilla.string.org.in/show_bug.cgi?id=6789)'
 
@@ -112,5 +109,4 @@ describe('Fix rendered extraction tests', () => {
     done(expect(getFixedRenderedIssueNumbers(body))
       .toEqual([3456, 2345, 3451, 2334]))
   })
-
 })
