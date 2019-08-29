@@ -1,7 +1,7 @@
 import {  WebhookPayloadPullRequestPullRequest } from "@octokit/webhooks";
 import links = require("../links");
 import { Context } from "probot";
-import { ChecksCreateParamsOutput, PullRequestsGetResponse } from "@octokit/rest";
+import { ChecksCreateParamsOutput, PullsGetResponse } from "@octokit/rest";
 
 type conclusion = "success"
 | "failure"
@@ -10,7 +10,7 @@ type conclusion = "success"
 | "timed_out"
 | "action_required"
 
-export async function handlePullRequestChange(context: Context, pullRequest: PullRequestsGetResponse | null = null) {
+export async function handlePullRequestChange(context: Context, pullRequest: PullsGetResponse | null = null) {
     const pull: WebhookPayloadPullRequestPullRequest = pullRequest || context.payload.pull_request
     const head = pull.head
     const fixedIssues = links.getFixedRenderedIssueNumbers(pull.body)
