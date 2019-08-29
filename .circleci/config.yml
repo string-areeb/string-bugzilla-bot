@@ -25,4 +25,8 @@ jobs:
 
       - run: yarn build
       # run tests!
-      - run: yarn test
+      - run:
+          name: Run Tests
+          command: yarn test --ci --runInBand
+          environment:
+              JEST_JUNIT_OUTPUT: "junit.xml"
