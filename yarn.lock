@@ -4259,6 +4259,18 @@ nock@^10.0.0:
     qs "^6.5.1"
     semver "^5.5.0"
 
+nock@^11.3.1:
+  version "11.3.1"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-11.3.1.tgz#3bafe0820a60f0900b948d31ab92b38ea6917b06"
+  integrity sha512-fsFRKNoH6R6hQuaasbAS5vmy4ujVaqKOb/9NCFP0TkhwbH1e5bPN8bn37FCIF9/0ZhayBrClUmSbN6Rm61+WSg==
+  dependencies:
+    chai "^4.1.2"
+    debug "^4.1.0"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.13"
+    mkdirp "^0.5.0"
+    propagate "^2.0.0"
+
 node-fetch@^2.1.1, node-fetch@^2.3.0, node-fetch@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
@@ -4938,6 +4950,11 @@ propagate@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/propagate/-/propagate-1.0.0.tgz#00c2daeedda20e87e3782b344adba1cddd6ad709"
   integrity sha1-AMLa7t2iDofjeCs0Stuhzd1q1wk=
+
+propagate@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/propagate/-/propagate-2.0.1.tgz#40cdedab18085c792334e64f0ac17256d38f9a45"
+  integrity sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==
 
 proxy-addr@~2.0.5:
   version "2.0.5"
