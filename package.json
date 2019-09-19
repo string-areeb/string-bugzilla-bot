@@ -27,7 +27,7 @@
     "auto-label": "github:iamareebjamal/auto-label",
     "nock": "^11.3.4",
     "node-fetch": "^2.6.0",
-    "probot": "^9.4.0",
+    "probot": "^9.5.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"
   },
