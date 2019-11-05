@@ -35,7 +35,7 @@
     "@types/express": "^4.17.2",
     "@types/jest": "^24.0.21",
     "@types/node": "^12.12.5",
-    "@types/node-fetch": "^2.5.2",
+    "@types/node-fetch": "^2.5.3",
     "eslint-plugin-typescript": "^0.14.0",
     "jest": "^24.9.0",
     "jest-junit": "^9.0.0",
