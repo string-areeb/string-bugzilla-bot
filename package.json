@@ -23,7 +23,7 @@
   "dependencies": {
     "@types/nock": "^11.1.0",
     "@types/request": "^2.48.3",
-    "@types/request-promise": "^4.1.44",
+    "@types/request-promise": "^4.1.45",
     "auto-label": "github:iamareebjamal/auto-label",
     "nock": "^11.7.0",
     "node-fetch": "^2.6.0",
