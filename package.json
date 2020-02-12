@@ -28,7 +28,7 @@
     "nock": "^11.7.0",
     "node-fetch": "^2.6.0",
     "probot": "^9.9.0",
-    "request": "^2.88.0",
+    "request": "^2.88.2",
     "request-promise": "^4.2.5"
   },
   "devDependencies": {
